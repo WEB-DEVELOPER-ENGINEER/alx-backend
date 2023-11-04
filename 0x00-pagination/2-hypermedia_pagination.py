@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
+"""Hypermedia pagination
 """
-Hypermedia pagination
-"""
+
+
+from typing import Tuple, List
 import csv
-from typing import List, Tuple
+import math
+
+
+def index_range(page: int, page_size: int) -> Tuple[int, int]:
+    """
+    start index and an end index corresponding to the range of
+    """
+    return ((page-1) * page_size, page_size * page)
 
 
 class Server:
-    """Server class to paginate a database of popular baby names.
+    """Server class to paginate a database of pop baby names.
     """
     DATA_FILE = "Popular_Baby_Names.csv"
 
@@ -24,46 +33,35 @@ class Server:
             self.__dataset = dataset[1:]
         return self.__dataset
 
-    @staticmethod
-    def index_range(page: int, page_size: int) -> Tuple[int, int]:
-        """Calculate start and end index range for a `page`, with `page_size`
-        """
-        nextPageStartIndex = page * page_size
-        return nextPageStartIndex - page_size, nextPageStartIndex
-
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
-        """
-        Args:
-            page (int): page number
-            page_size (int): number of items per page
-        Returns:
-            (List[List]): a list of list(row) if inputs are within range
-            ([]) : an empty list if page and page_size are out of range
-        """
-        assert type(page) == int and type(page_size) == int
-        assert page > 0 and page_size > 0
-        startIndex, endIndex = self.index_range(page, page_size)
-        return self.dataset()[startIndex:endIndex]
+        """return the appropriate page of the dataset"""
+        assert type(page) is int and page > 0
+        assert type(page_size) is int and page_size > 0
+        data = self.dataset()
+        try:
+            start, end = index_range(page, page_size)
+            return data[start:end]
+        except IndexError:
+            return []
 
-    def get_hyper(self, page: int,
-                  page_size: int) -> Dict[str, Union[int, List[List], None]]:
+    def get_hyper(self, page: int = 1, page_size: int = 10) -> dict:
+        """returns a dictionary containing the following key-value pairs
         """
-        Args:
-            page (int): page number
-            page_size (int): number of items per page
-        Returns:
-            A dict of the following:
-            page_size, page, data, next_page, prev_page, total_pages
-        """
+        assert type(page) is int and page > 0
+        assert type(page_size) is int and page_size > 0
         data = self.get_page(page, page_size)
-        totalRows = len(self.dataset())
-        prev_page = page - 1 if page > 1 else None
-        next_page = page + 1
-        if self.index_range(page, page_size)[1] >= totalRows:
+        total_pages = math.ceil(len(self.dataset()) / page_size)
+        start, end = index_range(page, page_size)
+        if (page < total_pages):
+            next_page = page+1
+        else:
             next_page = None
-        total_pages = totalRows / page_size
-        if total_pages % 1 != 0:
-            total_pages += 1
-        return {'page_size': len(data), 'page': page,
-                'data': data, 'next_page': next_page,
-                'prev_page': prev_page, 'total_pages': int(total_pages)}
+        if (page == 1):
+            prev_page = None
+        else:
+            prev_page = page - 1
+        return {'page_size': len(data), 'page': page, 'data': data,
+                'next_page': next_page,
+                'prev_page': prev_page,
+                'total_pages': total_pages
+                }
