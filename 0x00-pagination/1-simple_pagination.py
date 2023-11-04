@@ -7,7 +7,7 @@ from typing import List, Tuple
 
 
 class Server:
-    """Paginate a database of pop baby names.
+    """Server class to paginate a database of popular baby names.
     """
     DATA_FILE = "Popular_Baby_Names.csv"
     index_range = __import__('0-simple_helper_function').index_range
@@ -23,6 +23,7 @@ class Server:
                 reader = csv.reader(f)
                 dataset = [row for row in reader]
             self.__dataset = dataset[1:]
+
         return self.__dataset
 
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
