@@ -12,7 +12,7 @@ class LIFOCache(BaseCaching):
         self.key_indexes = []
 
     def put(self, key, item):
-        """documentation"""
+        """assign to the dict self.cache_data the value for the key 'key'"""
         if key is not None and item is not None:
             if len(self.cache_data) >= self.MAX_ITEMS:
                 if key in self.cache_data:
@@ -26,5 +26,5 @@ class LIFOCache(BaseCaching):
             self.key_indexes.append(key)
 
     def get(self, key):
-        """docs"""
+        """return the value in self.cache_data linked to key"""
         return self.cache_data.get(key)
