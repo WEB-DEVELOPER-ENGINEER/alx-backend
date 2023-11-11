@@ -9,16 +9,21 @@ class LIFOCache(BaseCaching):
     def __init__(self):
         """initialize"""
         super().__init__()
+        self.key_indexes = []
 
     def put(self, key, item):
         """documentation"""
         if key is not None and item is not None:
-            if len(self.cache_data) >= BaseCaching.MAX_ITEMS \
-                    and key not in self.cache_data.keys():
-                last_key, last_value = self.cache_data.popitem()
-                print("DISCARD: {}". format(last_key))
-
+            if len(self.cache_data) >= self.MAX_ITEMS:
+                if key in self.cache_data:
+                    del self.cache_data[key]
+                    self.key_indexes.remove(key)
+                else:
+                    del self.cache_data[self.key_indexes[self.MAX_ITEMS - 1]]
+                    item_discarded = self.key_indexes.pop(self.MAX_ITEMS - 1)
+                    print("DISCARD:", item_discarded)
             self.cache_data[key] = item
+            self.key_indexes.append(key)
 
     def get(self, key):
         """docs"""
